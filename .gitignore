@@ -1,0 +1,24 @@
+# Frontend Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Backend Python
+backend/.venv/
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/.pytest_cache/
+
+# Secrets : ne jamais envoyer sur Git
+.env
+.env.*
+!.env.example
+
+# Tests
+coverage/
+htmlcov/
+.coverage
+
+# Fichiers système Windows/macOS
+.DS_Store
+Thumbs.db
