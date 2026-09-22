@@ -197,7 +197,7 @@ cd backend
 .\.venv\Scripts\Activate.ps1
 ~~~
 
-Apres l'activation, le prefixe (.venv) doit apparaitre. Le serveur FastAPI n'est pas encore cree : la prochaine etape sera de creer le fichier main.py et une route /health.
+Apres l'activation, le prefixe (.venv) doit apparaitre. Le serveur FastAPI peut maintenant etre lance avec python -m uvicorn main:app --reload depuis backend/.
 
 ## 9. Protection Git avec .gitignore
 
@@ -225,3 +225,42 @@ Le resultat a montre que la regle backend/.venv/ du .gitignore racine ignore cor
 ## Regle a retenir
 
 Nous ajouterons une explication dans ce document apres chaque etape importante. Ne jamais copier une commande sans savoir dans quel dossier elle doit etre lancee et ce qu'elle va changer.
+
+## 10. Premiere API FastAPI
+
+Le fichier backend/main.py contient l'objet app = FastAPI(...). Cet objet est l'application web du backend. La fonction health est associee a GET /health : lorsque le navigateur ouvre cette adresse, l'API renvoie {"status": "ok"}.
+
+Le fichier backend/requirements.txt liste FastAPI avec la version utilisee pour ce projet. Un nouveau developpeur peut ainsi recreer son environnement avec :
+
+~~~powershell
+cd backend
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+~~~
+
+La premiere commande cree l'environnement. On ne la repete pas si .venv existe deja. La deuxieme l'active dans le terminal actuel. La derniere installe les bibliotheques listees dans requirements.txt.
+
+Pour lancer l'API depuis backend/ :
+
+~~~powershell
+python -m uvicorn main:app --reload
+~~~
+
+- python -m uvicorn lance le serveur web installe avec FastAPI ;
+- main:app signifie « trouve l'objet app dans le fichier main.py » ;
+- --reload redemarre automatiquement le serveur quand le code change. A utiliser seulement en developpement.
+
+Ensuite, ouvrir http://127.0.0.1:8000/health. La reponse attendue est {"status": "ok"}. La page http://127.0.0.1:8000/docs presente la documentation interactive generee par FastAPI. Ctrl + C arrete le serveur.
+
+Pour verifier automatiquement /health depuis backend/ :
+
+~~~powershell
+python -m unittest discover -s tests -v
+~~~
+
+Ce test envoie une requete a l'application et verifie le code HTTP 200 et la reponse JSON. Il utilise unittest, deja inclus avec Python.
+
+## 11. Branche Git de cette etape
+
+Le depot avait deux branches : main, qui contient seulement le commit initial du depot distant, et v1, qui contient le premier commit du frontend et de la documentation. La branche feat/backend-bootstrap a ete creee a partir de v1 pour developper le backend. Il faudra organiser ensuite l'integration de ces changements dans main ; rien n'est encore envoye sur GitHub.
