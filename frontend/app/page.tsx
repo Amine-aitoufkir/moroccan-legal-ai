@@ -1,5 +1,7 @@
 import { connection } from "next/server";
 
+import { ChatForm } from "./components/chat-form";
+
 async function isBackendHealthy(): Promise<boolean> {
   const backendUrl = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
 
@@ -58,6 +60,8 @@ export default async function Home() {
           Vérification de la route GET /health.
         </p>
       </section>
+
+      <ChatForm />
     </main>
   );
 }
