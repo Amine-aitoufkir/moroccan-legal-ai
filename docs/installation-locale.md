@@ -163,7 +163,7 @@ Ensuite, nous avons installe FastAPI :
 python -m pip install "fastapi[standard]"
 ~~~
 
-FastAPI est l'outil qui nous permet de creer une API backend. Sans FastAPI, nous ne pouvons pas creer les routes qui recoivent les demandes du frontend.
+FastAPI est l'outil choisi pour creer notre API backend. Python peut aussi creer des API avec d'autres outils ; FastAPI facilite les routes qui recoivent les demandes du frontend.
 
 Exemples de routes que nous creerons plus tard :
 
@@ -197,7 +197,7 @@ cd backend
 .\.venv\Scripts\Activate.ps1
 ~~~
 
-Apres l'activation, le prefixe (.venv) doit apparaitre. Le serveur FastAPI n'est pas encore cree : la prochaine etape sera de creer le fichier main.py et une route /health.
+Apres l'activation, le prefixe (.venv) doit apparaitre. Le serveur FastAPI peut maintenant etre lance avec python -m uvicorn main:app --reload depuis backend/.
 
 ## 9. Protection Git avec .gitignore
 
@@ -225,3 +225,67 @@ Le resultat a montre que la regle backend/.venv/ du .gitignore racine ignore cor
 ## Regle a retenir
 
 Nous ajouterons une explication dans ce document apres chaque etape importante. Ne jamais copier une commande sans savoir dans quel dossier elle doit etre lancee et ce qu'elle va changer.
+
+## 10. Premiere API FastAPI
+
+Le fichier backend/main.py contient l'objet app = FastAPI(...). Cet objet est l'application web du backend. La fonction health est associee a GET /health : lorsque le navigateur ouvre cette adresse, l'API renvoie {"status": "ok"}.
+
+Le fichier backend/requirements.txt liste FastAPI avec la version utilisee pour ce projet. Un nouveau developpeur peut ainsi recreer son environnement avec :
+
+~~~powershell
+cd backend
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+~~~
+
+La premiere commande cree l'environnement. On ne la repete pas si .venv existe deja. La deuxieme l'active dans le terminal actuel. La derniere installe les bibliotheques listees dans requirements.txt.
+
+Pour lancer l'API depuis backend/ :
+
+~~~powershell
+python -m uvicorn main:app --reload
+~~~
+
+- python -m uvicorn lance le serveur web installe avec FastAPI ;
+- main:app signifie « trouve l'objet app dans le fichier main.py » ;
+- --reload redemarre automatiquement le serveur quand le code change. A utiliser seulement en developpement.
+
+Ensuite, ouvrir http://127.0.0.1:8000/health. La reponse attendue est {"status": "ok"}. La page http://127.0.0.1:8000/docs presente la documentation interactive generee par FastAPI. Ctrl + C arrete le serveur.
+
+Pour verifier automatiquement /health depuis backend/ :
+
+~~~powershell
+python -m unittest discover -s tests -v
+~~~
+
+Ce test envoie une requete a l'application et verifie le code HTTP 200 et la reponse JSON. Il utilise unittest, deja inclus avec Python.
+
+## 11. Branche Git de cette etape
+
+Le depot avait deux branches : main, qui contient seulement le commit initial du depot distant, et v1, qui contient le premier commit du frontend et de la documentation. La branche feat/backend-bootstrap a ete creee a partir de v1 pour developper le backend. Il faudra organiser ensuite l'integration de ces changements dans main ; rien n'est encore envoye sur GitHub.
+
+## 12. Connexion du frontend au backend
+
+La page frontend/app/page.tsx a ete remplacee par une page qui affiche l'etat de l'API. Elle appelle GET /health sur FastAPI et montre « API FastAPI connectee » quand la reponse est correcte.
+
+La page est un composant serveur Next.js : l'appel a l'API part du serveur Next.js. Le navigateur recoit ensuite la page deja preparee. Cela evite pour cette premiere connexion un appel direct du navigateur a FastAPI et une configuration CORS.
+
+La variable BACKEND_URL permet de changer l'adresse de l'API. Par defaut, elle vaut http://127.0.0.1:8000. Le fichier frontend/.env.example montre cette configuration sans contenir de secret. Si necessaire, copier ce fichier dans frontend/.env.local, modifier l'adresse et relancer Next.js. Le fichier .env.local reste sur le PC et n'est pas envoye sur Git.
+
+Pour verifier la connexion, ouvrir deux terminaux :
+
+~~~powershell
+# Terminal 1, depuis backend/
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn main:app --reload
+~~~
+
+~~~powershell
+# Terminal 2, depuis frontend/
+npm run dev
+~~~
+
+Ouvrir http://localhost:3000 : la page doit afficher que l'API est connectee. Si le backend est arrete, elle affiche qu'il est indisponible. Rafraichir la page apres avoir demarre ou arrete le backend.
+
+Le template Next.js utilisait initialement les polices Google Geist. Le build devait les telecharger et echouait dans un environnement sans acces au site Google Fonts. Nous utilisons maintenant des polices systeme dans frontend/app/globals.css pour que le projet puisse etre construit hors ligne.
