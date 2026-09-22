@@ -289,3 +289,24 @@ npm run dev
 Ouvrir http://localhost:3000 : la page doit afficher que l'API est connectee. Si le backend est arrete, elle affiche qu'il est indisponible. Rafraichir la page apres avoir demarre ou arrete le backend.
 
 Le template Next.js utilisait initialement les polices Google Geist. Le build devait les telecharger et echouait dans un environnement sans acces au site Google Fonts. Nous utilisons maintenant des polices systeme dans frontend/app/globals.css pour que le projet puisse etre construit hors ligne.
+
+## 13. Premier contrat de chat
+
+Le backend expose maintenant POST /api/v1/chat. Contrairement a GET /health, POST sert a envoyer des donnees. Le frontend envoie un objet JSON comme {"question": "Quels sont mes droits ?"}.
+
+FastAPI utilise ChatRequest pour verifier que question contient entre 3 et 2000 caracteres. Une demande valide recoit un objet avec answer et sources. Une question trop courte recoit automatiquement le code HTTP 422. La reponse actuelle indique clairement que le RAG n'est pas encore connecte : elle ne donne aucun conseil juridique.
+
+Le formulaire interactif se trouve dans frontend/app/components/chat-form.tsx. Il est marque use client parce qu'il gere la saisie, le clic et l'etat de chargement dans le navigateur.
+
+Le navigateur appelle POST /api/chat dans Next.js. Le fichier frontend/app/api/chat/route.ts transmet ensuite la demande a FastAPI. Cette route intermediaire garde l'adresse interne du backend cote serveur et evitera d'exposer des secrets ou une configuration CORS au navigateur.
+
+Le trajet complet est :
+
+~~~text
+Formulaire du navigateur
+→ POST /api/chat sur Next.js
+→ POST /api/v1/chat sur FastAPI
+→ validation ChatRequest
+→ reponse JSON ChatResponse
+→ affichage dans le navigateur
+~~~
