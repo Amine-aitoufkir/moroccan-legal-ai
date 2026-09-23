@@ -310,3 +310,34 @@ Formulaire du navigateur
 → reponse JSON ChatResponse
 → affichage dans le navigateur
 ~~~
+
+## 14. Connexion FastAPI a Supabase
+
+FastAPI est le seul composant qui peut utiliser la cle secrete Supabase. Le navigateur ne doit jamais recevoir cette cle.
+
+Le fichier `backend/.env` reste seulement sur le PC et contient :
+
+~~~text
+SUPABASE_URL=https://alfouhkcpwfospqlbdij.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
+~~~
+
+`SUPABASE_URL` est l'adresse publique du projet. `SUPABASE_SECRET_KEY` est une cle privee reservee au backend. Ne jamais la copier dans Next.js, GitHub ou une capture d'ecran.
+
+`backend/.env.example` est le modele partageable : il ne contient pas de vraie cle.
+
+Le fichier `backend/supabase_client.py` fait ce chemin :
+
+~~~text
+backend/.env
+-> load_dotenv() lit le fichier
+-> os.getenv() recupere URL et cle en memoire
+-> create_client() construit le client Supabase
+-> FastAPI peut appeler la base
+~~~
+
+Les bibliotheques ajoutees dans `requirements.txt` sont `python-dotenv` (lecture de `.env`) et `supabase` (client Python officiel).
+
+GET `/health/supabase` teste la connexion en lisant au maximum une ligne de `conversations`. Il repond `{"status":"ok"}` si Supabase est joignable. En cas d'erreur, il renvoie une erreur generique 503 sans cle ni detail interne.
+
+Le backend utilise le role technique `service_role`, qui peut contourner RLS. C'est normal pour un serveur de confiance, mais cela rend la protection de `.env` indispensable. Les droits SQL necessaires ont ete ajoutes uniquement pour ce role sur `conversations` et `messages`.
